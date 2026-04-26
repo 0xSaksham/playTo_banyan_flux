@@ -16,7 +16,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from payouts.views import PayoutRequestView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/v1/payouts/', PayoutRequestView.as_view(), name='payout-request'),
 ]
