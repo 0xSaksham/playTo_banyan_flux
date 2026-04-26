@@ -25,3 +25,13 @@ class Payout(models.Model):
 
     def __str__(self):
         return f'Payout {self.id} for {self.merchant.name} - {self.amount_paise} paise'
+
+class Transaction(models.Model):
+    merchant = models.ForeignKey(Merchant, on_delete=models.CASCADE)
+    payout = models.ForeignKey(Payout,null= True,on_delete=models.SET_NULL)
+    amount_paise = models.BigIntegerField() # Positive for credits, negative for debits
+    type = models.CharField(max_length=10) # 'credit' or 'debit'
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Transaction {self.id} for Payout {self.payout.id} - {self.type} {self.amount_paise} paise'
