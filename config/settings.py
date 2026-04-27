@@ -32,7 +32,7 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
 ALLOWED_HOSTS = [
-    "playto-banyan-flux-0xsaksham.netlify.app",
+    "https://playto-banyan-flux-0xsaksham.netlify.app/",
 ]
 
 
