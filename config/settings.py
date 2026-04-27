@@ -67,7 +67,7 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173"
+    "https://playto-banyan-flux-0xsaksham.netlify.app",
 ]
 
 ROOT_URLCONF = 'config.urls'
