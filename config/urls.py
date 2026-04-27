@@ -16,9 +16,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from payouts.views import PayoutRequestView
+from payouts.views import PayoutRequestView , MerchantBalanceView, PayoutHistoryView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/v1/payouts/', PayoutRequestView.as_view(), name='payout-request'),
+    path('api/v1/balance/', MerchantBalanceView.as_view()),
+    path('api/v1/history/', PayoutHistoryView.as_view()),
 ]

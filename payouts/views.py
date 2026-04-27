@@ -1,9 +1,10 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.generics import ListAPIView
 from rest_framework import status
 from django.db import transaction, IntegrityError
 from .models import Payout, Merchant
-from .serializers import PayoutSerializer
+from .serializers import PayoutListSerializer
 
 class PayoutRequestView(APIView):
   def post(self, request):
@@ -11,7 +12,7 @@ class PayoutRequestView(APIView):
     if not idempotency_key:
       return Response({'error': 'Idempotency-Key header is required.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    serializar = PayoutSerializer(data=request.data)
+    serializar = PayoutListSerializer(data=request.data)
     if not serializar.is_valid():
       return Response(serializar.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -47,3 +48,14 @@ class PayoutRequestView(APIView):
 
     except IntegrityError:
       return Response({'error': 'A payout with this idempotency key already exists.'}, status=status.HTTP_409_CONFLICT)
+
+class MerchantBalanceView(APIView):
+    def get(self, request):
+        # We'll use the first merchant for now
+        merchant = Merchant.objects.first()
+        return Response({"balance_paise": merchant.balance_paise if merchant else 0})
+
+class PayoutHistoryView(ListAPIView):
+    serializer_class = PayoutListSerializer
+    def get_queryset(self):
+        return Payout.objects.all().order_by('-created_at')
