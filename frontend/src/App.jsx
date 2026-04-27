@@ -1,30 +1,38 @@
 import { useState, useEffect } from "react";
 
+const API_BASE = "https://playto-banyan-flux.onrender.com";
+
 function App() {
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState([]);
   const [amount, setAmount] = useState("");
+  const [message, setMessage] = useState("");
 
   const fetchData = async () => {
-    const balRes = await fetch("http://127.0.0.1:8000/api/v1/balance/");
-    const balData = await balRes.json();
-    setBalance(balData.balance_paise);
+    try {
+      const balRes = await fetch(`${API_BASE}/api/v1/balance/`);
+      const balData = await balRes.json();
+      setBalance(balData.balance_paise);
 
-    const histRes = await fetch("http://127.0.0.1:8000/api/v1/history/");
-    const histData = await histRes.json();
-    setHistory(histData);
+      const histRes = await fetch(`${API_BASE}/api/v1/history/`);
+      const histData = await histRes.json();
+      setHistory(histData);
+    } catch (e) {
+      console.error("Error fetching data:", e);
+    }
   };
 
   useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      fetchData();
-    }, 0);
-
-    return () => clearTimeout(timeoutId);
+    const loadData = async () => {
+      await fetchData();
+    };
+    loadData();
   }, []);
 
   const handlePayout = async () => {
-    await fetch("http://127.0.0.1:8000/api/v1/payouts/", {
+    if (!amount || amount <= 0) return;
+
+    const res = await fetch(`${API_BASE}/api/v1/payouts/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -32,33 +40,56 @@ function App() {
       },
       body: JSON.stringify({ amount_paise: parseInt(amount) }),
     });
-    fetchData();
+
+    if (res.ok) {
+      setMessage("Your request is accepted and is now processing!");
+      setAmount("");
+      fetchData();
+      setTimeout(() => setMessage(""), 5000); // Clear message after 5s
+    } else {
+      setMessage("Request failed: Insufficient funds or error.");
+    }
   };
 
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-4">Merchant Dashboard</h1>
-      <div className="bg-blue-100 p-4 rounded mb-4">
-        Balance: {balance / 100} INR
+    <div className="p-8 max-w-lg mx-auto font-sans">
+      <h1 className="text-3xl font-bold mb-6">Playto Merchant Dashboard</h1>
+
+      <div className="bg-gray-800 text-white p-6 rounded-lg mb-6">
+        <p className="text-sm text-gray-400">Available Balance</p>
+        <p className="text-4xl font-mono">{balance / 100} INR</p>
       </div>
-      <input
-        className="border p-2 mr-2"
-        onChange={(e) => setAmount(e.target.value)}
-        placeholder="Amount in paise"
-      />
-      <button
-        className="bg-blue-500 text-white p-2 rounded"
-        onClick={handlePayout}
-      >
-        Request Payout
-      </button>
-      <ul className="mt-4">
+
+      <div className="flex gap-2 mb-6">
+        <input
+          className="border p-2 rounded grow"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Amount (in paise)"
+        />
+        <button
+          className="bg-blue-600 text-white px-4 py-2 rounded"
+          onClick={handlePayout}
+        >
+          Request Payout
+        </button>
+      </div>
+
+      {message && (
+        <div className="bg-green-100 text-green-800 p-3 mb-4 rounded">
+          {message}
+        </div>
+      )}
+
+      <h2 className="font-bold mb-2">Recent Payouts</h2>
+      <div className="border rounded">
         {history.map((h) => (
-          <li key={h.id} className="border-b py-2">
-            {h.amount_paise / 100} INR - {h.status}
-          </li>
+          <div key={h.id} className="p-3 border-b flex justify-between">
+            <span>{h.amount_paise / 100} INR</span>
+            <span className="font-bold text-sm uppercase">{h.status}</span>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   );
 }
