@@ -33,7 +33,9 @@ DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
 ALLOWED_HOSTS = [
     "playto-banyan-flux-0xsaksham.netlify.app",
-    "playto-banyan-flux.onrender.com"
+    "playto-banyan-flux.onrender.com",
+    "localhost",
+    "127.0.0.1",
 ]
 
 
@@ -48,11 +50,17 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-
+    # Project Specific Apps
+    'drf_spectacular',
     'rest_framework',
     'payouts',
     'corsheaders',
+
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -69,6 +77,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "https://playto-banyan-flux-0xsaksham.netlify.app",
+    "https://playto-banyan-flux.onrender.com",
+    "http://localhost:5173",
 ]
 
 CORS_ALLOW_HEADERS = [

@@ -1,33 +1,40 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "http://127.0.0.1:8000";
+const API_BASE = "http://127.0.0.1:8000";
 
 function App() {
   const [balance, setBalance] = useState(0);
   const [history, setHistory] = useState([]);
   const [amount, setAmount] = useState("");
   const [message, setMessage] = useState("");
+  const [isWaking, setIsWaking] = useState(false);
 
-  const fetchData = async () => {
-    try {
-      const balRes = await fetch(`${API_BASE}/api/v1/balance/`);
-      const balData = await balRes.json();
-      setBalance(balData.balance_paise);
+const fetchData = useCallback(async function innerFetch() {
+  setIsWaking(true); // Show notification
+  try {
+    const balRes = await fetch(`${API_BASE}/api/v1/balance/`);
+    if (!balRes.ok) throw new Error("Server sleeping");
+    const balData = await balRes.json();
+    setBalance(balData.balance_paise);
 
-      const histRes = await fetch(`${API_BASE}/api/v1/history/`);
-      const histData = await histRes.json();
-      setHistory(histData);
-    } catch (e) {
-      console.error("Error fetching data:", e);
-    }
-  };
+    const histRes = await fetch(`${API_BASE}/api/v1/history/`);
+    const histData = await histRes.json();
+    setHistory(histData);
+    setIsWaking(false); // Hide notification
+  } catch (e) {
+    setMessage("Server is spinning up (takes ~30s). Please wait...");
+    // Retry after 10 seconds automatically
+    console.log(e.message);
+    setTimeout(innerFetch, 10000);
+  }
+}, []);
 
   useEffect(() => {
     const loadData = async () => {
       await fetchData();
     };
     loadData();
-  }, []);
+  }, [fetchData]);
 
   const handlePayout = async () => {
     if (!amount || amount <= 0) return;
@@ -90,6 +97,19 @@ function App() {
           </div>
         ))}
       </div>
+      {isWaking && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded shadow">
+          <button
+            className="bg-yellow-500 text-white px-4 py-2 rounded text-xs mb-4"
+            onClick={() => {
+              setMessage("Waking up server...");
+              fetchData();
+            }}
+          >
+            Force Wake Up Backend
+          </button>
+        </div>
+      )}
     </div>
   );
 }
