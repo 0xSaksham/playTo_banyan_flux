@@ -3,6 +3,10 @@ Cross-border payment infrastructure for emerging markets.
 
 This repository contains the core payout engine for Playto Pay, designed to handle merchant balance management, idempotent payout requests, and asynchronous bank settlement with strict data integrity.
 
+## URLS
+ - Server URL: https://playto-banyan-flux.onrender.com/
+ - Frontend URL: https://playto-banyan-flux-0xsaksham.netlify.app/
+
 ## 🏗 System Architecture
 The system is built on a **Double-Entry Ledger pattern** to ensure absolute financial accuracy.
 
@@ -56,8 +60,6 @@ To verify the system's robustness, I implemented sequential integration tests us
 1. **Double-Spend Prevention:** Ensuring that if two identical requests arrive, only one is processed and the balance remains consistent.
 2. **Idempotency Guarantee:** Ensuring repeated requests with the same key return the original payout status without duplicating side effects.
 
-*(Screenshot of test results goes here)*
+![alt text](public/image.png)
 
 ***This payout engine is designed to be a critical component of Playto Pay's mission to provide reliable, scalable cross-border payment solutions for emerging markets. The architecture prioritizes financial integrity and operational resilience, ensuring that merchants can trust the system with their funds.***
-
-
