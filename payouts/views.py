@@ -5,8 +5,12 @@ from rest_framework import status
 from django.db import transaction, IntegrityError
 from .models import Payout, Merchant
 from .serializers import PayoutListSerializer
+from drf_spectacular.utils import extend_schema
 
 class PayoutRequestView(APIView):
+  serializer_class = PayoutListSerializer
+
+  @extend_schema(request=PayoutListSerializer)
   def post(self, request):
     idempotency_key = request.headers.get('Idempotency-Key')
     if not idempotency_key:
@@ -50,6 +54,7 @@ class PayoutRequestView(APIView):
       return Response({'error': 'A payout with this idempotency key already exists.'}, status=status.HTTP_409_CONFLICT)
 
 class MerchantBalanceView(APIView):
+    @extend_schema(responses={200: {"type": "object", "properties": {"balance_paise": {"type": "integer"}}}})
     def get(self, request):
         # We'll use the first merchant for now
         merchant = Merchant.objects.first()

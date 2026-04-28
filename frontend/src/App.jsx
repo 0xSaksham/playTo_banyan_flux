@@ -9,31 +9,35 @@ function App() {
   const [message, setMessage] = useState("");
   const [isWaking, setIsWaking] = useState(false);
 
-const fetchData = useCallback(async function innerFetch() {
-  setIsWaking(true); // Show notification
-  try {
-    const balRes = await fetch(`${API_BASE}/api/v1/balance/`);
-    if (!balRes.ok) throw new Error("Server sleeping");
-    const balData = await balRes.json();
-    setBalance(balData.balance_paise);
+  const fetchData = useCallback(function fetchDataInner() {
+    setIsWaking(true);
+    setMessage(""); // Clear old messages
 
-    const histRes = await fetch(`${API_BASE}/api/v1/history/`);
-    const histData = await histRes.json();
-    setHistory(histData);
-    setIsWaking(false); // Hide notification
-  } catch (e) {
-    setMessage("Server is spinning up (takes ~30s). Please wait...");
-    // Retry after 10 seconds automatically
-    console.log(e.message);
-    setTimeout(innerFetch, 10000);
-  }
-}, []);
+    Promise.all([
+      fetch(`${API_BASE}/api/v1/balance/`),
+      fetch(`${API_BASE}/api/v1/history/`),
+    ])
+      .then(([balRes, histRes]) => {
+        if (!balRes.ok || !histRes.ok) throw new Error("Server sleeping");
+
+        return Promise.all([balRes.json(), histRes.json()]);
+      })
+      .then(([balData, histData]) => {
+        setBalance(balData.balance_paise);
+        setHistory(histData);
+        setIsWaking(false);
+      })
+      .catch((e) => {
+        console.warn("Fetch failed, retrying...", e.message);
+        setMessage("Backend is spinning up (takes ~30s). Retrying...");
+
+        // use the named function for retry to avoid TDZ issues
+        setTimeout(() => fetchDataInner(), 5000);
+      });
+  }, []);
 
   useEffect(() => {
-    const loadData = async () => {
-      await fetchData();
-    };
-    loadData();
+    fetchData();
   }, [fetchData]);
 
   const handlePayout = async () => {
