@@ -32,7 +32,8 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = os.getenv("DEBUG", "False").lower() in ("true", "1", "t")
 
 ALLOWED_HOSTS = [
-    "https://playto-banyan-flux-0xsaksham.netlify.app/",
+    "playto-banyan-flux-0xsaksham.netlify.app",
+    "playto-banyan-flux.onrender.com"
 ]
 
 
@@ -67,7 +68,17 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOWED_ORIGINS = [
-    "https://playto-banyan-flux-0xsaksham.netlify.app/",
+    "https://playto-banyan-flux-0xsaksham.netlify.app",
+]
+
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "authorization",
+    "content-type",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+    "idempotency-key"
 ]
 
 ROOT_URLCONF = 'config.urls'
